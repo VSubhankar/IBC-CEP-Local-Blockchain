@@ -109,6 +109,32 @@ pub mod pallet {
 				Self::deposit_event(Event::MemberRemoved);
 				Ok(())
 		}
+		
+		// fourth function added
+		#[pallet::weight(10_000)]
+		pub fn add_member_if_less_than_two(origin: OriginFor<T>) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+	
+			let mut club_members = ClubMembers::<T>::get();
+			let group_size = club_members.len();
+	
+			// Check if the group size is less than 2.
+			ensure!(group_size < 2, Error::<T>::GroupFull);
+	
+			// Check if the user is already a member.
+			ensure!(!club_members.contains(&who), Error::<T>::AlreadyMember);
+	
+			// Add the member to the group.
+			let location = club_members.binary_search(&who).err().ok_or(Error::<T>::AlreadyMember)?;
+			club_members.insert(location, who.clone());
+			ClubMembers::<T>::put(&club_members);
+	
+			// Emit an event.
+			Self::deposit_event(Event::MemberAdded);
+	
+			Ok(())
+		}
+		
 	}
 }
 
